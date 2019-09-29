@@ -1,0 +1,51 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Data segment
+.data
+	counter: DW 0x0000
+	scrollCounter: DW 0
+
+	; Modes:
+	;   0x00: init
+	;   0x01: keyboard operatated
+	;   0x02: autonomous
+	mode: DW 0x01
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; strings
+
+	sModeInit: DW "INIT", 0
+    sModeKeyOp: DW "KEYOP", 0
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Implementation segment
+
+.text
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; decide mode
+
+	cmp [mode], 0x00
+	jz modeInit
+	cmp [mode], 0x01
+	jz modeKeyOp
+	;cmp [mode], 0x02
+	;jz modeAuto
+	jmp modeDefault
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; call mdoe
+	modeInit:
+		call init
+		jmp modeDefault
+	modeKeyOp:
+		call keyop
+		jmp modeDefault
+	;modeAuto:
+	;	call autonomous
+	;	jmp modeDefault
+	modeDefault:
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; Increment program counter
+	add [counter], 1
+
+	brk

@@ -1,0 +1,638 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Constants
+
+; Hardware IDs
+LEGS_HW equ 1
+LASER_HW equ 2
+LIDAR_HW equ 3
+KEYBOARD_HW equ 4
+DRILL_HW equ 5
+INVENTORY_HW equ 6
+RNG_HW equ 0x07
+CLOCK_HW equ 0x08
+HOLOGRAM_HW equ 0x09
+BATTERY_HW equ 0x0A
+FLOPPY_HW equ 0x0B
+RADIO_RECEIVER_HW equ 0x0C
+COM_PORT_HW equ 0x0D
+
+; Legs
+LEGS_SET_DIRECTION equ 1
+LEGS_SET_DIRECTION_AND_WALK equ 2
+
+; Laser
+LASER_WITHDRAW equ 1
+LASER_DEPOSIT equ 2
+
+; LIDAR
+LIDAR_GET_POS equ 1
+LIDAR_GET_PATH equ 2
+LIDAR_GET_MAP equ 3
+LIDAR_GET_WORLD_POS equ 4
+
+; Keyboard
+KEYBOARD_CLEAR equ 0
+KEYBOARD_FETCH_KEY equ 1
+
+; Drill
+DRILL_POLL equ 1
+DRILL_GATHER_SLOW equ 2
+DRILL_GATHER_FAST equ 3
+
+; Inventory
+INVENTORY_POLL equ 1
+INVENTORY_CLEAR equ 2
+
+; Hologram
+HOLOGRAM_CLEAR equ 0
+HOLOGRAM_DISPLAY_HEX equ 1
+HOLOGRAM_DISPLAY_STRING equ 2
+
+; Battery
+BATTERY_POLL equ 1             ; Current charge -> B
+BATTERY_GET_MAX_CAPACITY equ 2 ; Maximum capacity -> B
+BATTERY_REFILL equ 0xFFFF
+
+; Floppy Drive
+FLOPPY_POLL equ 1			; Get staus: READY (0), NO_MEDIA (1) -> ???
+FLOPPY_READ_SECTOR equ 2	; Reads sector X to CPU ram starting at address Y
+FLOPPY_WRITE_SECTOR equ 3	; Writes sector X from CPU ram starting at Y
+
+; Radio Receiver
+RADIO_RECEIVER_LISTEN equ 1
+
+; Com Port
+COM_PORT_POLL equ 1
+COM_PORT_OUT equ 2
+
+; Directions
+NORTH equ 0
+EAST equ 1
+SOUTH equ 2
+WEST equ 3
+
+; Map Objects
+MAP_WALL equ 0x8000
+MAP_BIOMASS equ 0x4000
+MAP_FACTORY equ 0x2000
+MAP_IRON equ 0x0200
+MAP_COPPER equ 0x0100
+MAP_CUBOT equ 0x0080
+MAP_NPC equ 0x0040
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Keys - Courtesy of Jaggernaut
+
+KEY_A equ 0x41
+KEY_B equ 0x42
+KEY_C equ 0x43
+KEY_D equ 0x44
+KEY_E equ 0x45
+KEY_F equ 0x46
+KEY_G equ 0x47
+KEY_H equ 0x48
+KEY_I equ 0x49
+KEY_J equ 0x4A
+KEY_K equ 0x4B
+KEY_L equ 0x4C
+KEY_M equ 0x4D
+KEY_N equ 0x4E
+KEY_O equ 0x4F
+KEY_P equ 0x50
+KEY_Q equ 0x51
+KEY_R equ 0x52
+KEY_S equ 0x53
+KEY_T equ 0x54
+KEY_U equ 0x55
+KEY_V equ 0x56
+KEY_W equ 0x57
+KEY_X equ 0x58
+KEY_Y equ 0x59
+KEY_Z equ 0x5A
+KEY_0 equ 0x30
+KEY_1 equ 0x31
+KEY_2 equ 0x32
+KEY_3 equ 0x33
+KEY_4 equ 0x34
+KEY_5 equ 0x35
+KEY_6 equ 0x36
+KEY_7 equ 0x37
+KEY_8 equ 0x38
+KEY_9 equ 0x39
+KEY_TILDE equ 0xc0
+KEY_MINUS equ 0xbd
+KEY_PLUS equ 0xbb
+KEY_COMMA equ 0xbc
+KEY_PERIOD equ 0xbe
+KEY_SLASH equ 0xbf
+KEY_BACKSLASH equ 0xdc
+KEY_COLON equ 0xba
+KEY_QUOTE equ 0xde
+KEY_LEFT_BRACKET equ 0xdb
+KEY_RIGHT_BRACKET equ 0xdd
+KEY_TAB equ 0x9
+KEY_CTRL equ 0x11
+KEY_ALT equ 0x12
+KEY_ENTER equ 0xd
+KEY_SHIFT equ 0x10
+KEY_ESC equ 0x1b
+KEY_BS equ 0x8
+KEY_CAPSLOCK equ 0x14
+KEY_SPACE equ 0x20
+KEY_MENU equ 0x5d
+KEY_WIN equ 0x5b
+KEY_PAUSE equ 0x13
+KEY_SCROLLLOCK equ 0x91
+KEY_INSERT equ 0x2d
+KEY_HOME equ 0x24
+KEY_PAGE_UP equ 0x21
+KEY_PAGE_DOWN equ 0x22
+KEY_END equ 0x23
+KEY_DELETE equ 0x2e
+KEY_UP equ 0x26
+KEY_DOWN equ 0x28
+KEY_LEFT equ 0x25
+KEY_RIGHT equ 0x27
+KEY_NUMPAD_0 equ 0x60
+KEY_NUMPAD_1 equ 0x61
+KEY_NUMPAD_2 equ 0x62
+KEY_NUMPAD_3 equ 0x63
+KEY_NUMPAD_4 equ 0x64
+KEY_NUMPAD_5 equ 0x65
+KEY_NUMPAD_6 equ 0x66
+KEY_NUMPAD_7 equ 0x67
+KEY_NUMPAD_8 equ 0x68
+KEY_NUMPAD_9 equ 0x69
+KEY_NUMPAD_PERIOD equ 0x6e
+KEY_NUMPAD_SLASH equ 0x6f
+KEY_NUMPAD_STAR equ 0x6a
+KEY_NUMPAD_PLUS equ 0x6b
+KEY_NUMPAD_MINUS equ 0x6d
+KEY_NUMLOCK equ 0x90
+KEY_F1 equ 0x70
+KEY_F2 equ 0x71
+KEY_F3 equ 0x72
+KEY_F4 equ 0x73
+KEY_F5 equ 0x74
+KEY_F6 equ 0x75
+KEY_F7 equ 0x76
+KEY_F8 equ 0x77
+KEY_F9 equ 0x78
+KEY_F10 equ 0x79
+KEY_F11 equ 0x7a
+KEY_F12 equ 0x7b
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Data segment
+.data
+	counter: DW 0x0000
+	scrollCounter: DW 0
+
+	; Modes:
+	;   0x00: init
+	;   0x01: keyboard operatated
+	;   0x02: autonomous
+	mode: DW 0x01
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; strings
+
+	sModeInit: DW "INIT", 0
+    sModeKeyOp: DW "KEYOP", 0
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Implementation segment
+
+.text
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; decide mode
+
+	cmp [mode], 0x00
+	jz modeInit
+	cmp [mode], 0x01
+	jz modeKeyOp
+	;cmp [mode], 0x02
+	;jz modeAuto
+	jmp modeDefault
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; call mdoe
+	modeInit:
+		call init
+		jmp modeDefault
+	modeKeyOp:
+		call keyop
+		jmp modeDefault
+	;modeAuto:
+	;	call autonomous
+	;	jmp modeDefault
+	modeDefault:
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; Increment program counter
+	add [counter], 1
+
+	brk
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; init
+
+init:
+    push BP
+    mov BP, SP
+
+    ; announce mode
+    push sModeInit
+    call showString
+
+    ; switch to keyop mode
+    mov [mode], 0x01
+
+    mov SP, BP
+    pop BP
+    ret 0
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; keyoperated mode
+
+keyop:
+	push BP
+	mov BP, SP
+
+	; Keyboard handling
+	call keyboardHandler
+
+	mov SP, BP
+	pop BP
+	ret 0
+
+keyboardHandler:
+	call getKey
+
+	cmp B, KEY_A
+	jz keyHandler_keyop_A
+	cmp B, KEY_D
+	jz keyHandler_keyop_D
+	cmp B, KEY_E
+	jz keyHandler_keyop_E
+	cmp B, KEY_M
+	jz keyHandler_keyop_M
+	cmp B, KEY_Q
+	jz keyHandler_keyop_Q
+	cmp B, KEY_S
+	jz keyHandler_keyop_S
+	cmp B, KEY_W
+	jz keyHandler_keyop_W
+	cmp B, KEY_Z
+	jz keyHandler_keyop_Z
+
+	ret 0
+
+	; WASD movement
+	keyHandler_keyop_A:
+		push WEST
+		call walk
+		ret 0
+	keyHandler_keyop_D:
+		push EAST
+		call walk
+		ret 0
+	keyHandler_keyop_S:
+		push SOUTH
+		call walk
+		ret 0
+	keyHandler_keyop_W:
+		push NORTH
+		call walk
+		ret 0
+		
+	; Use drill
+	keyHandler_keyop_E:
+		call drillFast
+		ret 0
+	
+	; Use laser
+	keyHandler_keyop_Q:
+		mov A, LASER_WITHDRAW
+		mov B, 0x0001
+		hwi LASER_HW
+		ret 0
+	
+	; Set mode to autonomous
+	keyHandler_keyop_M:
+		mov [mode], 0x03
+		ret 0
+
+	; Set mode to seeker
+	keyHandler_keyop_Z:
+		mov [mode], 0x04
+		ret 0
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Battery
+
+; Copy the current charge of the battery in kJ into the B register
+; Cost: 0kJ
+; Modifies: A, B
+getCharge:
+    mov A, BATTERY_POLL
+    hwi BATTERY_HW
+    ret 0
+
+; Copy the maximum capacity of the battery into the B register
+; Cost: 0kJ
+; Modifies: A, B
+getCapacity:
+    mov A, BATTERY_GET_MAX_CAPACITY
+    hwi BATTERY_HW
+    ret 0
+
+; Refill the battery
+; Cost: -60000kJ
+; Modifies: A
+resetCharge:
+    MOV A, BATTERY_REFILL
+    hwi BATTERY_HW
+    ret 0
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Drill
+
+; Get the status of the drill
+; 0kJ
+; Modifies: A, ???
+drillGetStatus:
+    mov A, DRILL_POLL
+    hwi DRILL_HW
+    ret 0
+
+; Gather the resource located under the Cubot (4 tick)
+; 1400kJ
+; Modifies: A
+drillSlow:
+    mov A, DRILL_GATHER_SLOW
+    hwi DRILL_HW
+    ret 0
+
+; Gather the resource located under the Cubot (1 tick)
+; 2000kJ
+; Modifies: A
+drillFast:
+    mov A, DRILL_GATHER_FAST
+    hwi DRILL_HW
+    ret 0
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Floppy
+
+pollFloppy:
+    ret
+
+readSector:
+    ret
+
+writeSector:
+    ret
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Inventory
+
+; Get the contents of the inventory (B = Item ID, 0x0000 if empty)
+; 0kJ
+; Modifies: A, B
+inventoryPoll:
+    mov A, INVENTORY_POLL
+    hwi INVENTORY_HW
+    ret
+
+; Safely destroy the contents of the inventory
+; 100kJ
+; Modifies: A
+inventoryClear:
+    mov A, INVENTORY_POLL
+    hwi INVENTORY_HW
+    ret
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Keyboard
+
+; Clear the keypress buffer
+; Cost: 0kJ
+; Modifies: A, B
+getKey:
+    mov A, KEYBOARD_FETCH_KEY
+    hwi KEYBOARD_HW
+    ret 0
+
+; Reads the oldest keycode from the buffer into the B register and remove it
+; Cost: 0kJ
+; Modifies: A, B
+clearBuffer:
+    mov A, KEYBOARD_CLEAR
+    hwi KEYBOARD_HW
+    ret 0
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Laser
+
+; void laserWithdraw(ItemType i)
+;
+; Withdraw item of type i
+;
+; Cost: 30kJ
+; Modifies: A, B
+laserWithdraw:
+    push BP
+    mov BP, SP
+    
+    mov A, LASER_WITHDRAW
+    mov B, [BP+2]
+    hwi LASER_HW
+    ret
+    
+    mov SP, BP
+    pop BP
+    ret 1 
+
+; void laserWithdraw(ItemType i)
+;
+; Deposit item of type i
+;
+; Cost: 30kJ
+; Modifies: A, B
+laserDeposit:
+    push BP
+    mov BP, SP
+    
+    mov A, LASER_DEPOSIT
+    mov B, [BP+2]
+    hwi LASER_HW
+    ret
+    
+    mov SP, BP
+    pop BP
+    ret 1
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Legs
+
+; void turn(Direction d)
+;
+; Turn towards a direction
+;
+; Cost: 20kJ
+; Modifies: A, B
+turn:
+    push BP
+    mov BP, SP
+    
+    mov A, LEGS_SET_DIRECTION
+    mov B, [BP+2]
+    hwi LEGS_HW
+    
+    mov SP, BP
+    pop BP
+    ret 1
+
+; void showHex(Direction d)
+;
+; Walk in a direction
+;
+; Cost: 100kJ
+; Modifies: A, B
+walk:
+    push BP
+    mov BP, SP
+    
+    mov A, LEGS_SET_DIRECTION_AND_WALK
+    mov B, [BP+2]
+    hwi LEGS_HW
+    
+    mov SP, BP
+    pop BP
+    ret 1
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; LiDAR
+
+; getPosition
+;
+; Copy the current (x,y) coordinates in the World in the X and Y registers
+;
+; Cost: 0kJ
+; Modifies: A, X, Y
+getPosition:
+    mov A, LIDAR_GET_POS
+    hwi LIDAR_HW
+    ret 0
+
+; getPath
+;
+; Calculate the shortest path to the specified coordinates and copy it to memory
+;
+; Cost: 50kJ
+; Modifies: A, B, X, Y, 0x0000->Somewhere
+getPath:
+    mov A, LIDAR_GET_PATH
+    hwi LIDAR_HW
+    ret 0
+
+; getMap
+;
+; Generate the current World's map and copy it to memory
+;
+; Cost: 10kJ
+; Modifies: A, B, X, Y, 0x0000->Somewhere
+getMap:
+    mov A, LIDAR_GET_MAP
+    hwi LIDAR_HW
+    ret 0
+
+; getWorldPosition
+;
+; Copy the current (x,y) coordinates in the Universe in the X and Y registers
+;
+; Cost: 0kJ
+; Modifies: A, X, Y
+getWorldPosition:
+    mov A, LIDAR_GET_WORLD_POS
+    hwi LIDAR_HW
+    ret 0
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Hologram Projector
+
+; void clear(void)
+;
+; Clear hologram projector display
+;
+; Cost: 0kJ
+; Modifies: A
+clear:
+    mov A, HOLOGRAM_CLEAR
+    hwi HOLOGRAM_HW
+    ret 0
+
+; void showHex(uint16 c)
+;
+; Use hologram projector to display a 16-bit value
+;
+; Cost: 0kJ
+; Modifies: A, B
+showHex:
+    push BP
+    mov BP, SP
+    
+    mov A, HOLOGRAM_DISPLAY_HEX
+    mov B, [BP+2]
+    hwi HOLOGRAM_HW
+    
+    mov SP, BP
+    pop BP
+    ret 1
+
+; void showString(char* str)
+;
+; Use hologram projector to display a null-terminated string
+;
+; Cost: 0kJ
+; Modifies: A, X
+showString:
+    push BP
+    mov BP, SP
+    
+    mov A, HOLOGRAM_DISPLAY_STRING
+    mov X, [BP+2]
+    hwi HOLOGRAM_HW
+    
+    mov SP, BP
+    pop BP
+    ret 1
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Scrolling Text
+
+scrollText:
+    push BP
+    mov BP, SP
+    
+    ; Get our actual address from the source and offset
+    mov C, [BP+2]
+    add C, [scrollCounter]
+    
+    ; Display the string
+    push C
+    call showString
+    
+    ; Increment the offset
+    add [scrollCounter], 3
+    
+    ; Check to see if any of our next values are the null terminator
+    cmp [C], 0
+    jz scrollReset
+    cmp [C+1], 0
+    jz scrollReset
+    cmp [C+2], 0
+    jz scrollReset
+    
+    jmp scrollExit
+    
+    scrollReset:
+        ; Reset the counter
+        mov [scrollCounter], 0
+    
+    scrollExit:
+        mov SP, BP
+        pop BP
+        ret 1

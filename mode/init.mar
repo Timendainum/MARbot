@@ -1,0 +1,17 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; init
+
+init:
+    push BP
+    mov BP, SP
+
+    ; announce mode
+    push sModeInit
+    call showString
+
+    ; switch to keyop mode
+    mov [mode], 0x01
+
+    mov SP, BP
+    pop BP
+    ret 0
